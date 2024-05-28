@@ -1,83 +1,69 @@
-import mpv
-from flask import Flask, request, jsonify
-from flask_restx import Api, Resource, fields
+from flask import request, Flask, render_template, send_from_directory, abort, Blueprint, redirect, url_for
+from flask_restx import Api
+from media_routes import ns as media_namespace
 from logger import setup_logger
 from dbcontroller import DatabaseConnector
+from config_updater import load_config
 
-app = Flask(__name__)
-api = Api(app, version='1.0', title='Media Player API', description='A simple Media Player API')
-ns = api.namespace('media', description='Media operations')
+# Initialize Flask app
+app = Flask(__name__, template_folder='templates', static_folder='static')
 
-player = mpv.MPV()
-logger = setup_logger()
-
+# Initialize database connector
 db_connector = DatabaseConnector(host='your_host', user='your_user', password='your_password', database='your_database')
 
-# Define the expected input for the play endpoint
-play_model = api.model('Play', {
-    'url': fields.String(required=True, description='The URL of the media to play')
-})
+# Load config once during startup
+config = load_config()
 
-# Define the expected input for the volume endpoint
-volume_model = api.model('Volume', {
-    'volume': fields.Integer(required=True, description='The volume level to set', min=0, max=100)
-})
+# Setup logger
+logger = setup_logger()
 
-# Define the expected input for retrieving data by client and device IDs
-data_model = api.model('Data', {
-    'client_id': fields.String(required=True, description='The client ID'),
-    'device_id': fields.String(required=True, description='The device ID')
-})
+# Create a Blueprint for the main routes
+main_blueprint = Blueprint('main_blueprint', __name__, template_folder='templates', static_folder='static')
 
-@ns.route('/play')
-class Play(Resource):
-    @ns.expect(play_model)
-    @ns.response(200, 'Success')
-    @ns.response(400, 'Validation Error')
-    def post(self):
-        """Play media from a given URL"""
-        data = request.json
-        url = data.get('url')
-        if not url:
-            ns.abort(400, 'URL is required')
-        player.play(url)
-        logger.info(f"Playing: {url}")
-        return jsonify({'message': 'Playing'})
+# Dictionary to map routes to templates
+page_templates = {
+    'credentials': 'credentials.html',
+    'index': 'index.html',
+    'main': 'index.html',
+    'local-media': 'local-media.html',
+    'public-announcement': 'public-announcement.html',
+    'info': 'info.html',
+    'stream-collections': 'stream-collections.html',
+}
 
-@ns.route('/stop')
-class Stop(Resource):
-    @ns.response(200, 'Success')
-    def post(self):
-        """Stop playing media"""
-        player.stop()
-        logger.info("Stopped")
-        return jsonify({'message': 'Stopped'})
+# Route for serving static files
+@main_blueprint.route('/static/<path:folder>/<path:filename>')
+def serve_static(folder, filename):
+    return send_from_directory('static', f'{folder}/{filename}')
 
-@ns.route('/volume')
-class Volume(Resource):
-    @ns.expect(volume_model)
-    @ns.response(200, 'Success')
-    @ns.response(400, 'Validation Error')
-    def post(self):
-        """Change the volume level"""
-        data = request.json
-        volume = data.get('volume')
-        if volume is None or not (0 <= volume <= 100):
-            ns.abort(400, 'Volume must be an integer between 0 and 100')
-        player.volume = volume
-        logger.info(f"Volume set to: {volume}")
-        return jsonify({'message': 'Volume set', 'volume': volume})
+# Route for rendering other pages
+@main_blueprint.route('/<page>')
+def render_page(page):
+    logger.info(f'Route /{page}')
+    template = page_templates.get(page)
+    if not template:
+        abort(404)
+    return render_template(template,
+        current_player_link=f"{config.get('preview_url', '')}/embed?theme=dark",
+        client_id=config.get('client_id', ''),
+        device_id=config.get('device_id', ''),
+        password=config.get('password', '')
+    )
 
-@ns.route('/retrieve_data/<string:client_id>/<string:device_id>')
-class RetrieveData(Resource):
-    @ns.response(200, 'Success')
-    @ns.response(400, 'Validation Error')
-    def get(self, client_id, device_id):
-        """Retrieve data from the database"""
-        result = db_connector.retrieve_data(client_id, device_id)
-        if result is None:
-            ns.abort(400, 'Data not found or an error occurred')
-        return jsonify({'data': result})
+# Redirect from / to /main
+@app.before_request
+def redirect_main():
+    if request.path == '/':
+        return redirect(url_for('main_blueprint.render_page', page='main'), code=302)
+
+# Register blueprint
+app.register_blueprint(main_blueprint)
+
+# Initialize Flask-Restx API
+api = Api(app, version='1.0', title='Media Player API', description='A simple Media Player API', doc='/api/docs')
+
+# Add media namespace to the API
+api.add_namespace(media_namespace)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=80, debug=False)

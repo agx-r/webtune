@@ -13,6 +13,7 @@ def load_config():
     try:
         with open(config_file, 'r') as f:
             config = json.load(f)
+        logger.debug(config)
     except FileNotFoundError:
         config = {
             "stream_url": "https://rdi-cast.uz/listen/restaurant/promo",

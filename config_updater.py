@@ -29,6 +29,23 @@ def load_config():
         logger.error("Config file not found")
     return config
 
+def replace_duplicates(original_object, mask_object):
+    result = original_object.copy()
+
+    for key, value in mask_object.items():
+        if key in result:
+            result[key] = value
+
+    return result
+
+def upload_config(config_object):
+    original_config = load_config()
+    
+    updated_config = replace_duplicates(original_config, config_object)
+
+    with open(config_file, 'w') as f:
+        json.dump(updated_config, f)
+
 def update_by_database(controller=None):
     logger.info("Updating by DB")
     config = load_config()

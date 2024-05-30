@@ -20,6 +20,12 @@ logger = setup_logger()
 # Create a Blueprint for the main routes
 main_blueprint = Blueprint('main_blueprint', __name__, template_folder='templates', static_folder='static')
 
+# Initialize Flask-Restx API
+api = Api(app, version='1.0', title='Media Player API', description='A simple Media Player API', doc='/api/docs')
+
+# Add media namespace to the API
+api.add_namespace(media_namespace)
+
 # Dictionary to map routes to templates
 page_templates = {
     'credentials': 'credentials.html',
@@ -47,7 +53,8 @@ def render_page(page):
         current_player_link=f"{config.get('preview_url', '')}/embed?theme=dark",
         client_id=config.get('client_id', ''),
         device_id=config.get('device_id', ''),
-        password=config.get('password', '')
+        password=config.get('password', ''),
+        request=request
     )
 
 # Redirect from / to /main
@@ -58,12 +65,6 @@ def redirect_main():
 
 # Register blueprint
 app.register_blueprint(main_blueprint)
-
-# Initialize Flask-Restx API
-api = Api(app, version='1.0', title='Media Player API', description='A simple Media Player API', doc='/api/docs')
-
-# Add media namespace to the API
-api.add_namespace(media_namespace)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=False)

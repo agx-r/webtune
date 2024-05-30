@@ -10,7 +10,7 @@ def setup_logger():
         formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
         # RichHandler for colorful console output
-        console_handler = RichHandler(markup=False, console=Console(force_terminal=True))
+        console_handler = RichHandler(markup=False, console=Console(force_terminal=False))
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
 

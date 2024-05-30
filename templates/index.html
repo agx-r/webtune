@@ -115,13 +115,12 @@
               <div class="volume-slider-container">
                 <input type="range" min="0" max="100" value="50" class="volume-slider" id="myVolume">
               </div>
-              <script>
-  var volumeSlider = document.getElementById('myVolume');
-  volumeSlider.oninput = function() {
-    var fillPercentage = (this.value - this.min) / (this.max - this.min) * 100;
-    this.style.setProperty('--fill-percentage', fillPercentage + '%');
-    console.log('Current Volume:', this.value);
-  }
+<script>
+var volumeSlider = document.getElementById('myVolume');
+volumeSlider.oninput = function() {
+  var fillPercentage = (this.value - this.min) / (this.max - this.min) * 100;
+  this.style.setProperty('--fill-percentage', fillPercentage + '%');
+}
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -179,7 +178,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обновление заливки в зависимости от значения ползунка
     var fillPercentage = (this.value - this.min) / (this.max - this.min) * 100;
     this.style.setProperty('--fill-percentage', fillPercentage + '%');
-    console.log('Current Volume:', this.value);
+    fetch('{{ url_for("media_volume") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ volume: parseInt(this.value) })
+    });
   }
 </script>
             </body>

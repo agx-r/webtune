@@ -43,6 +43,7 @@ class PlayCurrent(Resource):
     def post(self):
         """Use URL from config"""
         config = load_config()
+        player.volume = 100
         url_to_play = config["stream_url"]
         player.stop()
         player.play(url_to_play)

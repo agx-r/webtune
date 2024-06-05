@@ -8,9 +8,6 @@ from config_updater import load_config
 # Initialize Flask app
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
-# Initialize database connector
-db_connector = DatabaseConnector(host='your_host', user='your_user', password='your_password', database='your_database')
-
 # Load config once during startup
 config = load_config()
 
@@ -67,4 +64,9 @@ def redirect_main():
 app.register_blueprint(main_blueprint)
 
 if __name__ == '__main__':
+    config = load_config()
+    player.volume = 100
+    url_to_play = config["stream_url"]
+    player.play(url_to_play)
+    logger.info(f"Playing {url_to_play}")
     app.run(host='0.0.0.0', port=80, debug=False)

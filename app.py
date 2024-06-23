@@ -43,6 +43,7 @@ def serve_static(folder, filename):
 @main_blueprint.route('/<page>')
 def render_page(page):
     logger.info(f'Route /{page}')
+    config = load_config()
     template = page_templates.get(page)
     if not template:
         abort(404)

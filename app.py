@@ -65,8 +65,5 @@ app.register_blueprint(main_blueprint)
 
 if __name__ == '__main__':
     config = load_config()
-    player.volume = 100
-    url_to_play = config["stream_url"]
-    player.play(url_to_play)
     logger.info(f"Playing {url_to_play}")
     app.run(host='0.0.0.0', port=80, debug=False)

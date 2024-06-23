@@ -111,3 +111,6 @@ class RetrieveData(Resource):
             ns.abort(400, 'Data not found or an error occurred')
         return jsonify({'data': result})
 
+player.volume = 100
+url_to_play = config["stream_url"]
+player.play(url_to_play)

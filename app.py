@@ -65,5 +65,4 @@ app.register_blueprint(main_blueprint)
 
 if __name__ == '__main__':
     config = load_config()
-    logger.info(f"Playing {url_to_play}")
     app.run(host='0.0.0.0', port=80, debug=False)

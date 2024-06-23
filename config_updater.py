@@ -3,7 +3,7 @@ from dbcontroller import DatabaseConnector
 from logger import setup_logger
 import json
 
-config_file = "external/config.json"
+config_file = "/external/config.json"
 logger = setup_logger()
 
 def load_config():

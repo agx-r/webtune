@@ -112,5 +112,4 @@ class RetrieveData(Resource):
         return jsonify({'data': result})
 
 player.volume = 100
-url_to_play = config["stream_url"]
-player.play(url_to_play)
+player.play(config["stream_url"])

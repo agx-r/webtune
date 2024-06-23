@@ -26,7 +26,11 @@ def load_config():
             "password": "webtune",
             "db_name": "stream_linker"
         }
-        logger.error("Config file not found")
+        
+        with open('/external/config.json', 'w') as f:
+            json.dump(config, f, indent=4)
+        
+        logger.info("Creating config file.")
     return config
 
 def replace_duplicates(original_object, mask_object):

@@ -98,6 +98,7 @@ def check_server_periodically():
             else:
                 logger.debug(f"The stream is unavailable")
                 restart_next_time = True
+                player.play(url)
         
         time.sleep(10)
 
